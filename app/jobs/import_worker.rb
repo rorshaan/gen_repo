@@ -2,7 +2,10 @@ class ImportWorker
 	include Sidekiq::Worker
 
 
-	def perform(file_path, model_name, json_data = nil)
+	def perform(file_path, model_name, json_data = nil, import_file_id)
+		import_file = ImportFile.find(import_file_id)
+		import_file.processing!
+
 		model_name = model_name.to_s
 
 		if json_data.present?
@@ -14,36 +17,11 @@ class ImportWorker
 			Rails.logger.warn("[ImportWorker] no file or json data provided for #{model_name}")
 		end
 
+		import_file.completed!
 	rescue => e
+		import_file.failed!
 		Rails.logger.error("[ImportWorker] Error importing #{model_name}: #{e.class}: #{e.message}\n#{e.backtrace.first(10).join("\n")}")
-	ensure
-		begin
-      File.delete(file_path) if file_path.present? && File.exist?(file_path)
-    rescue => _; end
 	end
-
-	# def perform(file_path, model_name)
-	# 	spreadsheet = Roo::Spreadsheet.open(file_path)
-	# 	header = spreadsheet.row(1)
-
-	# 	case model_name
-	# 	when "Channel One"
-	# 		import_channel_one(spreadsheet,header)
-	# 	when "Channel Two"
-	# 		import_channel_two(spreadsheet,header)
-	# 	when "Channel Three"
-	# 		import_channel_three(spreadsheet,header)
-	# 	when "Channel Four"
-	# 		import_channel_four(spreadsheet,header)
-	# 	when "Channel Five"
-	# 		import_channel_five(spreadsheet,header)
-	# 	when "Channel Six"
-	# 		import_channel_six(spreadsheet,header)
-	# 	else
-	# 		Rails.logger.warn("Unknown model: #{model_name}")
-	# 	end
-	# end
-
 
 	private
 

@@ -10,8 +10,18 @@ class ImportsController < ApplicationController
 		# file upload multipart/form-data (HTML or API client)
 		if params[:file].present?
 			uploaded = params[:file]
-			tmp_filename = "#{SecureRandom.uuid}#{File.extname(uploaded.original_filename)}"
-			file_path = Rails.root.join("tmp", tmp_filename)
+			filename = uploaded.original_filename
+
+			folder = Rails.root.join(
+				"public",
+				"storage",
+				Time.current.strftime("%Y"),
+        Time.current.strftime("%b"),
+        model_name.parameterize
+			)
+			FileUtils.mkdir_p(folder)
+
+			file_path = folder.join(filename)
 			File.open(file_path, "wb") { |f| f.write(uploaded.read) }
 			
 			spreadsheet = Roo::Spreadsheet.open(file_path.to_s)
@@ -19,11 +29,22 @@ class ImportsController < ApplicationController
 			validator = FileValidator.new(model_name, header)
 
 			unless validator.valid?
-				File.delete(file_path) if File.exist?(file_path)
 				return respond_with_error(422, validator.error_message)
 			end
 
-			job_id = ImportWorker.perform_async(file_path.to_s, model_name, nil)
+			# Track upload
+			relative_path = file_path.to_s.sub(Rails.root.join("public").to_s + "/", "")
+
+			import_file = ImportFile.create!(
+				user: current_user,
+				channel_name: model_name,
+				file_path: relative_path,
+				status: :pending
+			)
+
+			job_id = ImportWorker.perform_async(file_path.to_s, model_name, nil, import_file.id)
+			import_file.update!(job_id: job_id)
+
 			return respond_with_success(job_id, model_name)
 		end
 
@@ -44,8 +65,18 @@ class ImportsController < ApplicationController
         return respond_with_error(422, validator.error_message)
       end
 
+      # Track upload
+      import_file = ImportFile.create!(
+        user: current_user,
+        channel_name: model_name,
+        file_path: nil,
+        status: :pending
+      )
+
       # enqueue worker with JSON string (Sidekiq arguments must be JSON serializable)
       job_id = ImportWorker.perform_async(nil, model_name, data_array.to_json)
+      import_file.update!(job_id: job_id)
+
       return respond_with_success(job_id, model_name)
 		end
 
@@ -58,7 +89,7 @@ class ImportsController < ApplicationController
 	def respond_with_success(job_id, model_name)
 		message = "#{model_name} import started"
 		respond_to do |format|
-			format.html { redirect_to root_path, notice: "#{message}! You’ll be notified when it finishes." }
+			format.html { redirect_to import_files_path, notice: "#{message}! You’ll be notified when it finishes." }
       format.json { render json: { message: message, job_id: job_id }, status: :accepted }
 		end
 	end

@@ -105,9 +105,4 @@ class FileValidator
     return nil if missing.empty?
     "Missing columns for #{@model_name}: #{missing.join(', ')}"
   end
-
-  # def errors
-  # 	return if valid?
-  # 	["Invalid headers for #{@model_name}. Expected: #{expected_headers.join(', ')}"]
-  # end
 end

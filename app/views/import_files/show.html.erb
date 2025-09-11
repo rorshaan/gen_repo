@@ -1,0 +1,47 @@
+<div class="container mt-4">
+  <h2>Import Details</h2>
+
+  <table class="table table-bordered">
+    <tr>
+      <th>File Name</th>
+      <td><%= File.basename(@import_file.file_path) %></td>
+    </tr>
+    <tr>
+      <th>Channel Name</th>
+      <td><%= @import_file.channel_name %></td>
+    </tr>
+    <tr>
+      <th>Uploaded By</th>
+      <td><%= @import_file.user&.email || "System" %></td>
+    </tr>
+    <tr>
+      <th>Status</th>
+      <td>
+        <% case @import_file.status %>
+        <% when "completed" %>
+          <span class="badge bg-success">Completed</span>
+        <% when "processing" %>
+          <span class="badge bg-warning text-dark">Processing</span>
+        <% when "failed" %>
+          <span class="badge bg-danger">Failed</span>
+        <% else %>
+          <span class="badge bg-secondary"><%= @import_file.status %></span>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th>Uploaded At</th>
+      <td><%= @import_file.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+    </tr>
+    <tr>
+      <th>File Path</th>
+      <td><%= @import_file.file_path %></td>
+    </tr>
+  </table>
+
+  <% if @import_file.file_path.present? && File.exist?(Rails.root.join("public", @import_file.file_path)) %>
+    <%= link_to "Download File", "/" + @import_file.file_path, class: "btn btn-primary mt-3", target: "_blank" %>
+  <% end %>
+
+  <%= link_to "Back to Imports", import_files_path, class: "btn btn-secondary mt-3" %>
+</div>
