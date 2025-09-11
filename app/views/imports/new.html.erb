@@ -1,0 +1,17 @@
+<div class="col-lg-8 mx-auto mt-4">
+  <h1>Upload Excel File</h1>
+
+  <%= form_with url: imports_path, multipart: true, local: true do |form| %>
+    <div class="mb-3">
+      <%= form.label :file, "Choose Excel File" %>
+      <%= form.file_field :file, class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <%= form.label :model, "File Type" %>
+      <%= form.select :model, options_for_select(["Channel One", "Channel Two", "Channel Three", "Channel Four", "Channel Five", "Channel Six"]), {}, class: "form-select" %>
+    </div>
+
+    <%= form.submit "Upload", class: "btn btn-primary" %>
+  <% end %>
+</div>

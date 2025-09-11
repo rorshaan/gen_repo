@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  transaction_id: MyString
+  sender_msisdn: MyString
+  transaction_amount: 9.99
+  transaction_datetime: 2025-09-08 15:17:51
+  transaction_type: MyString
+  receiver_msisdn: MyString
+  service_name: MyString
+  transaction_status: MyString
+  reference_number: MyString
+  previous_balance: 9.99
+  post_balance: 9.99
+  external_transaction_id: MyString
+
+two:
+  transaction_id: MyString
+  sender_msisdn: MyString
+  transaction_amount: 9.99
+  transaction_datetime: 2025-09-08 15:17:51
+  transaction_type: MyString
+  receiver_msisdn: MyString
+  service_name: MyString
+  transaction_status: MyString
+  reference_number: MyString
+  previous_balance: 9.99
+  post_balance: 9.99
+  external_transaction_id: MyString

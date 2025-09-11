@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  receipt_no: MyString
+  completion_time: 2025-09-09 18:42:51
+  initiation_time: 2025-09-09 18:42:51
+  details: MyString
+  transaction_status: MyString
+  currency: MyString
+  paid_in: MyString
+  withdrawn: 9.99
+  balance: 9.99
+  reason_type: MyString
+  opposite_party: MyString
+  linked_transaction_id: MyString
+
+two:
+  receipt_no: MyString
+  completion_time: 2025-09-09 18:42:51
+  initiation_time: 2025-09-09 18:42:51
+  details: MyString
+  transaction_status: MyString
+  currency: MyString
+  paid_in: MyString
+  withdrawn: 9.99
+  balance: 9.99
+  reason_type: MyString
+  opposite_party: MyString
+  linked_transaction_id: MyString
