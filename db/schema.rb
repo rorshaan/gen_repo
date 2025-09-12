@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_09_11_104934) do
+ActiveRecord::Schema[7.0].define(version: 2025_09_12_130102) do
   create_table "channel_ones", force: :cascade do |t|
     t.string "transaction_id"
     t.string "sender_msisdn"
@@ -26,6 +26,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_11_104934) do
     t.string "external_transaction_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "import_file_id"
+    t.index ["import_file_id"], name: "index_channel_ones_on_import_file_id"
   end
 
   create_table "channel_twos", force: :cascade do |t|
@@ -43,6 +45,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_11_104934) do
     t.string "linked_transaction_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "import_file_id"
+    t.index ["import_file_id"], name: "index_channel_twos_on_import_file_id"
   end
 
   create_table "import_files", force: :cascade do |t|
@@ -53,6 +57,10 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_11_104934) do
     t.string "job_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "total_rows"
+    t.integer "processed_count"
+    t.integer "rejected_count"
+    t.string "error_file_path"
     t.index ["user_id"], name: "index_import_files_on_user_id"
   end
 

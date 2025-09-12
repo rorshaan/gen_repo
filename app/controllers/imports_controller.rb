@@ -32,6 +32,7 @@ class ImportsController < ApplicationController
 				return respond_with_error(422, validator.error_message)
 			end
 
+			total_rows = [spreadsheet.last_row - 1, 0].max
 			# Track upload
 			relative_path = file_path.to_s.sub(Rails.root.join("public").to_s + "/", "")
 
@@ -39,7 +40,10 @@ class ImportsController < ApplicationController
 				user: current_user,
 				channel_name: model_name,
 				file_path: relative_path,
-				status: :pending
+				status: :pending,
+				total_rows: total_rows,
+				processed_count: 0,
+				rejected_count: 0
 			)
 
 			job_id = ImportWorker.perform_async(file_path.to_s, model_name, nil, import_file.id)
@@ -70,7 +74,10 @@ class ImportsController < ApplicationController
         user: current_user,
         channel_name: model_name,
         file_path: nil,
-        status: :pending
+        status: :pending,
+        total_rows: data_array.length,
+				processed_count: 0,
+				rejected_count: 0
       )
 
       # enqueue worker with JSON string (Sidekiq arguments must be JSON serializable)

@@ -17,4 +17,14 @@ class ImportFilesController < ApplicationController
       redirect_to import_files_path, alert: "File not found"
     end
   end
+
+  def download_rejected
+    import_file = ImportFile.find(params[:id])
+    absolute_path = import_file.absolute_error_file_path
+    if absolute_path && File.exist?(absolute_path)
+      send_file absolute_path, filename: File.basename(absolute_path), type: "text/csv", disposition: "attachment"
+    else
+      redirect_to import_file_path(import_file), alert: "Rejected CSV not found"
+    end
+  end
 end

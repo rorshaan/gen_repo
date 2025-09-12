@@ -17,7 +17,10 @@
 			      <th>File</th>
 			      <th>Status</th>
 			      <th>Uploaded At</th>
-			      <th>View</th>
+			      <th>Total Rows</th>
+			      <th>Inserted</th>
+			      <th>Rejected</th>
+			      <th>Actions</th>
 			    </tr>
 			  </thead>
 			  <tbody>
@@ -34,8 +37,34 @@
 			          </span>
 			        </td>
 			        <td><%= file.created_at.strftime("%d %b %Y %H:%M") %></td>
+
+      				<td><%= file.total_rows || "-" %></td>
+      				
+      				<td><%= file.processed_count || 0 %></td>
+      				<td>
+				        <%= file.rejected_count || 0 %>
+				      </td>
 			        <td>
-							  <%= link_to "View" , import_file_path(file), class: "btn btn-primary" %>
+							  <div class="dropdown">
+							    <button class="btn btn-primary dropdown-toggle" type="button" id="actionsMenu<%= file.id %>" data-bs-toggle="dropdown" aria-expanded="false">
+							      Actions
+							    </button>
+							    <ul class="dropdown-menu" aria-labelledby="actionsMenu<%= file.id %>">
+							      <li>
+							        <%= link_to "View", import_file_path(file), class: "dropdown-item" %>
+							      </li>
+							      <% if file.file_path.present? %>
+							        <li>
+							          <%= link_to "Download", download_import_file_path(file), class: "dropdown-item", data: { turbo: false } %>
+							        </li>
+							      <% end %>
+							      <% if file.error_file_path.present? %>
+							        <li>
+							          <%= link_to "Rejected CSV", download_rejected_import_file_path(file), class: "dropdown-item", data: { turbo: false } %>
+							        </li>
+							      <% end %>
+							    </ul>
+							  </div>
 							</td>
 			      </tr>
 			    <% end %>

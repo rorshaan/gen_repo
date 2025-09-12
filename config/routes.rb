@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   resources :import_files, only: [:index, :show] do
     member do 
       get :download
+      get :download_rejected
     end
   end
   resources :channel_ones, only: [:index]

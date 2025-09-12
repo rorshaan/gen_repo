@@ -11,6 +11,23 @@
       <td><%= @import_file.channel_name %></td>
     </tr>
     <tr>
+      <th>Total Rows</th>
+      <td><%= @import_file.total_rows || "-" %></td>
+    </tr>
+    <tr>
+      <th>Inserted</th>
+      <td><%= @import_file.processed_count || 0 %></td>
+    </tr>
+    <tr>
+      <th>Rejected</th>
+      <td>
+        <%= @import_file.rejected_count || 0 %>
+        <% if @import_file.error_file_path.present? %>
+          <%= link_to "Download Rejected CSV", download_rejected_import_file_path(@import_file), class: "btn btn-sm btn-warning ms-2" %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
       <th>Uploaded By</th>
       <td><%= @import_file.user&.email || "System" %></td>
     </tr>
