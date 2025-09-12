@@ -1,5 +1,9 @@
 class ChannelOnesController < ApplicationController
 	def index
-		@channel_ones = ChannelOne.all.order(created_at: :desc).page(params[:page]).per(10)
+		@import_files = ImportFile.includes(:channel_ones, :user)
+                              .where.not(channel_ones: { id: nil })
+                              .order(created_at: :desc)
+                              .page(params[:page])
+                              .per(10)
 	end
 end

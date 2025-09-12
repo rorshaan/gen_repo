@@ -1,5 +1,7 @@
 class ImportFile < ApplicationRecord
   belongs_to :user, optional: true
+  has_many :channel_ones, dependent: :destroy
+  has_many :channel_twos, dependent: :destroy
 
   enum status: { pending: 0, processing: 1, completed: 2, failed: 3 }
 
