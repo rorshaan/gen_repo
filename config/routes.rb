@@ -16,4 +16,12 @@ Rails.application.routes.draw do
   end
   resources :channel_ones, only: [:index]
   resources :channel_twos, only: [:index]
+  resources :storage, only: [:index, :show]
+
+
+  # get "/storage/:id", to: "storage#show", as: :storage
+
+
+  # get "/storage_browser", to: "storage#index", as: :storage_browser
+  # get "/storage_browser/file/:id", to: "storage#show", as: :storage_file
 end

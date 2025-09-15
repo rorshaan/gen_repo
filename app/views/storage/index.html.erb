@@ -1,0 +1,118 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 border-end bg-light" style="height: calc(100vh - 40px); overflow-y: auto; padding: 1rem;">
+      <h6 class="mb-3">Storage</h6>
+
+      <div class="accordion" id="storageAccordion">
+        <% @tree.each_with_index do |(year, months), y_idx| %>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-year-<%= y_idx %>">
+              <button class="accordion-button collapsed" type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapse-year-<%= y_idx %>"
+                      aria-expanded="false">
+                <%= year %>
+              </button>
+            </h2>
+
+            <div id="collapse-year-<%= y_idx %>" class="accordion-collapse collapse">
+              <div class="accordion-body p-2">
+                <% months.each_with_index do |(month, days), m_idx| %>
+                  <div class="accordion mb-1">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="heading-month-<%= y_idx %>-<%= m_idx %>">
+                        <button class="accordion-button collapsed py-1" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapse-month-<%= y_idx %>-<%= m_idx %>"
+                                aria-expanded="false">
+                          <%= month %>
+                        </button>
+                      </h2>
+
+                      <div id="collapse-month-<%= y_idx %>-<%= m_idx %>" class="accordion-collapse collapse">
+                        <div class="accordion-body p-2">
+                          <% days.each_with_index do |(day, channels), d_idx| %>
+                            <div class="accordion mb-1">
+                              <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading-day-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>">
+                                  <button class="accordion-button collapsed py-1" type="button"
+                                          data-bs-toggle="collapse"
+                                          data-bs-target="#collapse-day-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>"
+                                          aria-expanded="false">
+                                    <%= day %>
+                                  </button>
+                                </h2>
+
+                                <div id="collapse-day-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>" class="accordion-collapse collapse">
+                                  <div class="accordion-body p-2">
+
+                                    <% channels.each_with_index do |(channel, files), c_idx| %>
+                                      <div class="accordion mb-1">
+                                        <div class="accordion-item">
+                                          <h2 class="accordion-header" id="heading-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>">
+                                            <button class="accordion-button collapsed py-1" type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#collapse-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>"
+                                                    aria-expanded="false">
+                                              <%= channel %>
+                                            </button>
+                                          </h2>
+
+                                          <div id="collapse-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>" class="accordion-collapse collapse">
+                                            <div class="accordion-body p-2">
+                                              <ul class="list-group list-group-flush">
+                                                <% files.each do |f| %>
+                                                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                      <!-- VIEW loads into turbo frame (no page reload) -->
+                                                      <%= link_to f[:name], f[:view_url], data: { turbo_frame: "content_frame" }, class: "text-decoration-none" %>
+                                                      <div class="small text-muted">Rows: <%= f[:rows] || '-' %> — <%= f[:status] %></div>
+                                                    </div>
+
+                                                    <div>
+                                                      <% if f[:download_url].present? %>
+                                                        <%= link_to "Download", f[:download_url], class: "btn btn-sm btn-outline-secondary", target: "_blank", data: { turbo: false } %>
+                                                      <% end %>
+                                                    </div>
+                                                  </li>
+                                                <% end %>
+                                              </ul>
+                                            </div>
+                                          </div>
+
+                                        </div>
+                                      </div>
+                                    <% end %>
+
+                                  </div>
+                                </div>
+
+                              </div>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Right content area (Turbo Frame) -->
+    <div class="col-9 p-3">
+      <turbo-frame id="content_frame">
+        <div class="h-100 d-flex align-items-center justify-content-center">
+          <div class="text-center text-muted">
+            <h5>Select a file from the sidebar to view transactions</h5>
+            <p class="mb-0">Click file name (left) to load transactions here. Use Download button to download file.</p>
+          </div>
+        </div>
+      </turbo-frame>
+    </div>
+  </div>
+</div>
