@@ -9,78 +9,12 @@
     </div>
 
     <% if @import_files.any? %>
-      <div class="accordion" id="filesAccordion">
-        <% @import_files.each_with_index do |file, index| %>
-          <% if file.channel_twos.any? %>
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="heading-<%= index %>">
-                <button class="accordion-button <%= index > 0 ? 'collapsed' : '' %>" 
-                        type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapse-<%= index %>" 
-                        aria-expanded="<%= index == 0 %>" 
-                        aria-controls="collapse-<%= index %>">
-                  File: <%= File.basename(file.file_path) %> 
-                  | Uploaded by: <%= file.user.email %> 
-                  | Rows: <%= file.channel_twos.size %>
-                </button>
-              </h2>
-
-              <div id="collapse-<%= index %>" 
-                   class="accordion-collapse collapse <%= index == 0 ? 'show' : '' %>" 
-                   aria-labelledby="heading-<%= index %>" 
-                   data-bs-parent="#filesAccordion">
-                <div class="accordion-body">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-bordered table-hover align-middle">
-                      <thead class="table-primary">
-                        <tr>
-                          <th>Receipt No.</th>
-                          <th>Completion Time</th>
-                          <th>Initiation Time</th>
-                          <th>Details</th>
-                          <th>Transaction Status</th>
-                          <th>Currency</th>
-                          <th>Paid In</th>
-                          <th>Withdrawn</th>
-                          <th>Balance</th>
-                          <th>Reason Type</th>
-                          <th>Opposite Party</th>
-                          <th>Linked Transaction ID</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <% file.channel_twos.each do |channel_two| %>
-                          <tr>
-                            <td><%= channel_two.receipt_no %></td>
-                            <td><%= channel_two.completion_time&.strftime("%d-%m-%Y %H:%M") %></td>
-                            <td><%= channel_two.initiation_time&.strftime("%d-%m-%Y %H:%M") %></td>
-                            <td><%= channel_two.details %></td>
-                            <td>
-                              <% if channel_two.transaction_status == "Success" %>
-                                <span class="badge bg-success">Success</span>
-                              <% else %>
-                                <span class="badge bg-danger"><%= channel_two.transaction_status %></span>
-                              <% end %>
-                            </td>
-                            <td><%= channel_two.currency %></td>
-                            <td><%= channel_two.paid_in %></td>
-                            <td><%= channel_two.withdrawn %></td>
-                            <td><%= channel_two.balance %></td>
-                            <td><%= channel_two.reason_type %></td>
-                            <td><%= channel_two.opposite_party %></td>
-                            <td><%= channel_two.linked_transaction_id %></td>
-                          </tr>
-                        <% end %>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
+      <%= render "shared/accordion",
+                 association: :channel_twos,
+                 headers: ["Receipt No.", "Completion Time", "Initiation Time", "Details",
+                           "Transaction Status", "Currency", "Paid In", "Withdrawn",
+                           "Balance", "Reason Type", "Opposite Party", "Linked Transaction ID"],
+                 row_partial: "channel_twos/row" %>
     <% else %>
       <div class="alert alert-info">No Channel Record found.</div>
     <% end %>

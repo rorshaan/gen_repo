@@ -8,81 +8,15 @@
       </div>
     </div>
 
-    <% if @import_files.any? { |file| file.channel_ones.any? } %>
-      <div class="accordion" id="filesAccordion">
-        <% @import_files.each_with_index do |file, index| %>
-          <% if file.channel_ones.any? %> 
-            <div class="accordion-item">
-              <h2 class="accordion-header" id="heading-<%= index %>">
-                <button class="accordion-button <%= index > 0 ? 'collapsed' : '' %>" 
-                        type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#collapse-<%= index %>" 
-                        aria-expanded="<%= index == 0 %>" 
-                        aria-controls="collapse-<%= index %>">
-                  File: <%= File.basename(file.file_path) %> 
-                  | Uploaded by: <%= file.user.email %> 
-                  | Rows: <%= file.channel_ones.size %>
-                </button>
-              </h2>
-
-              <div id="collapse-<%= index %>" 
-                   class="accordion-collapse collapse <%= index == 0 ? 'show' : '' %>" 
-                   aria-labelledby="heading-<%= index %>" 
-                   data-bs-parent="#filesAccordion">
-                <div class="accordion-body">
-                  <div class="table-responsive">
-                    <table class="table table-striped table-bordered table-hover align-middle">
-                      <thead class="table-primary">
-                        <tr>
-                          <th>Transaction ID</th>
-                          <th>Sender Msisdn</th>
-                          <th>Transaction Amount</th>
-                          <th>Transaction Date & Time</th>
-                          <th>Transaction Type</th>
-                          <th>Receiver Msisdn</th>
-                          <th>Service Name</th>
-                          <th>Status</th>
-                          <th>Reference Number</th>
-                          <th>Previous Balance</th>
-                          <th>Post Balance</th>
-                          <th>External Transaction ID</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <% file.channel_ones.each do |channel_one| %>
-                          <tr>
-                            <td><%= channel_one.transaction_id %></td>
-                            <td><%= channel_one.sender_msisdn %></td>
-                            <td><%= channel_one.transaction_amount %></td>
-                            <td><%= channel_one.transaction_datetime&.strftime("%d-%m-%Y %H:%M") %></td>
-                            <td><%= channel_one.transaction_type %></td>
-                            <td><%= channel_one.receiver_msisdn %></td>
-                            <td><%= channel_one.service_name %></td>
-                            <td>
-                              <% if channel_one.transaction_status == "Success" %>
-                                <span class="badge bg-success">Success</span>
-                              <% else %>
-                                <span class="badge bg-danger"><%= channel_one.transaction_status %></span>
-                              <% end %>
-                            </td>
-                            <td><%= channel_one.reference_number %></td>
-                            <td><%= channel_one.previous_balance %></td>
-                            <td><%= channel_one.post_balance %></td>
-                            <td><%= channel_one.external_transaction_id %></td>
-                          </tr>
-                        <% end %>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
+    <% if @import_files.any? %>
+      <%= render "shared/accordion",
+                 association: :channel_ones,
+                 headers: ["Transaction ID", "Sender Msisdn", "Transaction Amount", "Transaction Date & Time",
+                           "Transaction Type", "Receiver Msisdn", "Service Name", "Status",
+                           "Reference Number", "Previous Balance", "Post Balance", "External Transaction ID"],
+                 row_partial: "channel_ones/row" %>
     <% else %>
-      <div class="alert alert-info">No Channel One records found.</div>
+      <div class="alert alert-info">No Channel Record found.</div>
     <% end %>
 
     <div class="d-flex justify-content-center mt-3">
