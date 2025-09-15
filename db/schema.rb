@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.0].define(version: 2025_09_12_130102) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "channel_ones", force: :cascade do |t|
     t.string "transaction_id"
     t.string "sender_msisdn"
@@ -50,13 +53,13 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_12_130102) do
   end
 
   create_table "import_files", force: :cascade do |t|
-    t.integer "user_id", null: false
+    t.bigint "user_id", null: false
     t.string "channel_name"
     t.string "file_path"
-    t.integer "status", default: 0, null: false
     t.string "job_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.integer "total_rows"
     t.integer "processed_count"
     t.integer "rejected_count"
