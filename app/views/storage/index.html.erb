@@ -51,36 +51,10 @@
                                       <div class="accordion mb-1">
                                         <div class="accordion-item">
                                           <h2 class="accordion-header" id="heading-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>">
-                                            <button class="accordion-button collapsed py-1" type="button"
-                                                    data-bs-toggle="collapse"
-                                                    data-bs-target="#collapse-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>"
-                                                    aria-expanded="false">
-                                              <%= channel %>
-                                            </button>
+                                            <%= link_to channel, storage_model_path(model_name: channel), 
+                                                data: { turbo_frame: "content_frame" }, 
+                                                class: "accordion-button collapsed py-1 text-decoration-none" %>
                                           </h2>
-
-                                          <div id="collapse-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>" class="accordion-collapse collapse">
-                                            <div class="accordion-body p-2">
-                                              <ul class="list-group list-group-flush">
-                                                <% files.each do |f| %>
-                                                  <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                      <!-- VIEW loads into turbo frame (no page reload) -->
-                                                      <%= link_to f[:name], f[:view_url], data: { turbo_frame: "content_frame" }, class: "text-decoration-none" %>
-                                                      <div class="small text-muted">Rows: <%= f[:rows] || '-' %> — <%= f[:status] %></div>
-                                                    </div>
-
-                                                    <div>
-                                                      <% if f[:download_url].present? %>
-                                                        <%= link_to "Download", f[:download_url], class: "btn btn-sm btn-outline-secondary", target: "_blank", data: { turbo: false } %>
-                                                      <% end %>
-                                                    </div>
-                                                  </li>
-                                                <% end %>
-                                              </ul>
-                                            </div>
-                                          </div>
-
                                         </div>
                                       </div>
                                     <% end %>

@@ -31,6 +31,34 @@ class StorageController < ApplicationController
     render partial: "storage/transactions", locals: { file: @selected_file, records: @records }
   end
 
+  def show_model
+    channel = params[:model_name].to_s
+
+    # collect all files for this channel
+    files = ImportFile.where(channel_name: channel)
+
+    # merge all records across files
+    @records =
+      case channel
+      when "Channel One"
+        rel = ChannelOne.where(import_file_id: files.ids)
+        rel = rel.where("transaction_id LIKE ?", "%#{params[:search].strip}%") if params[:search].present?
+        rel = rel.order(transaction_amount: (params[:sort] == "desc" ? :desc : :asc)) if params[:sort].present?
+        rel.page(params[:page]).per(20)
+      when "Channel Two"
+        rel = ChannelTwo.where(import_file_id: files.ids)
+        rel = rel.where("receipt_no LIKE ?", "%#{params[:search].strip}%") if params[:search].present?
+        rel = rel.order(transaction_amount: (params[:sort] == "desc" ? :desc : :asc)) if params[:sort].present?
+        rel.page(params[:page]).per(20)
+      else
+        ChannelOne.none.page(params[:page]).per(20)
+      end
+
+    # render same transactions partial, but without a single file
+    render partial: "storage/transactions", locals: { file: nil, channel: channel, records: @records }
+  end
+
+
   private
 
   def build_tree(files)
