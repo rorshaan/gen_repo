@@ -12,11 +12,19 @@ class StorageController < ApplicationController
     @records =
       case channel
       when "Channel One"
-        @selected_file.channel_ones.order(:id).page(params[:page]).per(20)
+        # @selected_file.channel_ones.order(:id).page(params[:page]).per(20)
+        rel = @selected_file.channel_ones
+        rel = rel.where("transaction_id LIKE ?", "%#{params[:search].strip}%") if params[:search].present?
+        rel = rel.order(transaction_amount: (params[:sort] == "desc" ? :desc : :asc)) if params[:sort].present?
+        rel.page(params[:page]).per(20)
       when "Channel Two"
-        @selected_file.channel_twos.order(:id).page(params[:page]).per(20)
+        # @selected_file.channel_twos.order(:id).page(params[:page]).per(20)
+        rel = @selected_file.channel_twos
+        rel = rel.where("receipt_no LIKE ?", "%#{params[:search].strip}%") if params[:search].present?
+        rel = rel.order(transaction_amount: (params[:sort] == "desc" ? :desc : :asc)) if params[:sort].present?
+        rel.page(params[:page]).per(20)
       else
-        []
+        @selected_file.channel_ones.none.page(params[:page]).per(20)
       end
 
     # render partial only (will be inserted into the turbo-frame)
