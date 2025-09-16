@@ -6,42 +6,85 @@
         <span class="float-end text-muted">
           Rows: <%= file.total_rows || "-" %> | Status: <%= file.status %>
         </span>
+        <%= link_to "Download File", download_import_file_path(file.id), 
+                class: "btn btn-sm btn-success m-1",
+                download: File.basename(file.file_path) %>
       <% else %>
         <strong><%= channel %></strong> — All Records
       <% end %>
     </div>
 
+    
+    <div class="card-header">
+      <!-- Toggle Filters Button -->
+      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+        Toggle Filters
+      </button>
+    </div>
+   
+
     <div class="card-body p-2">
       <% channel_name = file.present? ? file.channel_name : channel %>
 
-      <div class="d-flex justify-content-between">
+      <div class="collapse" id="filterCollapse">
         <div class="mb-3">
-          <%= form_with url: (file.present? ? storage_path(file.id, channel: channel_name) :
-                                             storage_model_path(model_name: channel_name)),
-              method: :get,
-              data: { turbo_frame: "content_frame" },
-              id: "search_form" do %>
-            <%= hidden_field_tag :channel, channel_name %>
+          <%= form_with url: storage_model_path(model_name: channel_name),
+                        method: :get,
+                        data: { turbo_frame: "content_frame" },
+                        id: "search_form" do %>
+            <%= hidden_field_tag :channel, file.present? ? file.channel_name : channel %>
             <%= hidden_field_tag :page, 1 %>
-          <% end %>
-        </div>
+            <%= hidden_field_tag :file_date, params[:file_date] %>
 
-        <div class="mb-2">
-          <span>Sort by Amount:</span>
-          <% if file.present? %>
-            <%= link_to "Ascending", storage_path(file.id, channel: channel_name, search: params[:search], sort: "asc"),
-                        data: { turbo_frame: "content_frame" }, class: "btn btn-sm btn-outline-secondary" %>
-            <%= link_to "Descending", storage_path(file.id, channel: channel_name, search: params[:search], sort: "desc"),
-                        data: { turbo_frame: "content_frame" }, class: "btn btn-sm btn-outline-secondary" %>
-          <% else %>
-            <%= link_to "Ascending", storage_model_path(model_name: channel_name, search: params[:search], sort: "asc"),
-                        data: { turbo_frame: "content_frame" }, class: "btn btn-sm btn-outline-secondary" %>
-            <%= link_to "Descending", storage_model_path(model_name: channel_name, search: params[:search], sort: "desc"),
-                        data: { turbo_frame: "content_frame" }, class: "btn btn-sm btn-outline-secondary" %>
+            <div class="row g-2 align-items-end">
+              <!-- Transaction ID -->
+              <div class="col-lg-3">
+                <%= label_tag :transaction_id, "Transaction ID", class: "form-label" %>
+                <%= text_field_tag :transaction_id, params[:transaction_id], class: "form-control", placeholder: "Search Transaction Id" %>
+              </div>
+
+              <!-- Reference Number -->
+              <div class="col-lg-3">
+                <%= label_tag :reference_number, "Reference ID", class: "form-label" %>
+                <%= text_field_tag :reference_number, params[:reference_number], class: "form-control", placeholder: "Search Reference Id" %>
+              </div>
+
+              <!-- Date Range -->
+              <div class="col-lg-3">
+                <%= label_tag :start_date, "Start Date", class: "form-label" %>
+                <%= date_field_tag :start_date, params[:start_date], class: "form-control" %>
+              </div>
+              <div class="col-lg-3">
+                <%= label_tag :end_date, "End Date", class: "form-label" %>
+                <%= date_field_tag :end_date, params[:end_date], class: "form-control" %>
+              </div>
+
+              <!-- Status -->
+              <div class="col-lg-3">
+                <%= label_tag :status, "Status", class: "form-label" %>
+                <%= select_tag :status, options_for_select(["Success", "Failed"], params[:status]), include_blank: "Select", class: "form-select" %>
+              </div>
+
+              <div class="col-lg-3">
+                <%= label_tag :transaction_amount, "Amount", class: "form-label" %>
+                <%= select_tag :transaction_amount, options_for_select(["Ascending", "Descending"], params[:transaction_amount]), include_blank: "Select", class: "form-select" %>
+              </div>
+
+              <!-- File Dropdown -->
+              <% if files.present? %>
+                <div class="col-lg-3">
+                  <%= label_tag :file_id, "File", class: "form-label" %>
+                  <%= select_tag :file_id, options_from_collection_for_select(files, "id", "file_path", params[:file_id]), include_blank: "All Files", class: "form-select" %>
+                </div>
+              <% end %>
+
+              <div class="col-lg-3">
+                <%= submit_tag "Apply Filter", class: "btn btn-primary" %>
+              </div>
+            </div>
           <% end %>
         </div>
       </div>
-
       <% if records.present? %>
         <% if channel_name == "Channel One" %>
           <!-- Channel One table -->
@@ -51,18 +94,7 @@
                 <tr>
                   <th>Transaction ID</th>
                   <th>Sender Msisdn</th>
-                  <th>Amount
-                    <%= link_to (file.present? ?
-                                   storage_path(file.id, channel: channel_name, search: params[:search], sort: (params[:sort] == "asc" ? "desc" : "asc")) :
-                                   storage_model_path(model_name: channel_name, search: params[:search], sort: (params[:sort] == "asc" ? "desc" : "asc"))),
-                                data: { turbo_frame: "content_frame" }, class: "ms-1 text-decoration-none" do %>
-                      <% if params[:sort] == "asc" %>
-                        <i class="bi bi-sort-up ms-4"></i>
-                      <% else %>
-                        <i class="bi bi-sort-down ms-4"></i>
-                      <% end %>
-                    <% end %>
-                  </th>
+                  <th>Amount</th>
                   <th>Date & Time</th>
                   <th>Type</th>
                   <th>Receiver</th>
@@ -165,14 +197,3 @@
     <%= paginate @records %>
   </div>
 </turbo-frame>
-
-<script>
-  document.addEventListener("turbo:frame-load", (event) => {
-    if (event.target.id === "content_frame") {
-      const searchInput = document.getElementById("search_input");
-      if (searchInput) {
-        searchInput.value = ""; // reset the input
-      }
-    }
-  });
-</script>

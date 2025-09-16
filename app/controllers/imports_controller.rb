@@ -37,7 +37,7 @@ class ImportsController < ApplicationController
 			relative_path = file_path.to_s.sub(Rails.root.join("public").to_s + "/", "")
 
 			import_file = ImportFile.create!(
-				user: current_user,
+				user: current_user&.id || User.find_by(id: params[:user_id]),
 				channel_name: model_name,
 				file_path: relative_path,
 				status: :pending,
@@ -71,7 +71,7 @@ class ImportsController < ApplicationController
 
       # Track upload
       import_file = ImportFile.create!(
-        user: current_user,
+        user: current_user || User.find_by(id: params[:user_id]),
         channel_name: model_name,
         file_path: nil,
         status: :pending,

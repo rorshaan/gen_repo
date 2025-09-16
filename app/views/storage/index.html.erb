@@ -51,7 +51,7 @@
                                       <div class="accordion mb-1">
                                         <div class="accordion-item">
                                           <h2 class="accordion-header" id="heading-channel-<%= y_idx %>-<%= m_idx %>-<%= d_idx %>-<%= c_idx %>">
-                                            <%= link_to channel, storage_model_path(model_name: channel), 
+                                            <%= link_to channel, storage_model_path(model_name: channel, file_date: day), 
                                                 data: { turbo_frame: "content_frame" }, 
                                                 class: "accordion-button collapsed py-1 text-decoration-none" %>
                                           </h2>
