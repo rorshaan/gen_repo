@@ -77,3 +77,4 @@ gem 'byebug'
 gem 'sidekiq'
 gem "kaminari"
 gem "pg", "~> 1.4"
+gem 'devise-jwt'
