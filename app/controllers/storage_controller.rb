@@ -1,6 +1,6 @@
 class StorageController < ApplicationController
   def index
-    files = ImportFile.order(created_at: :desc).includes(:user)
+    files = ImportFile.where.not(processed_count: 0).order(created_at: :desc).includes(:user)
     @tree = build_tree(files)
   end
 
@@ -69,7 +69,7 @@ class StorageController < ApplicationController
 
     # collect all files for this channel
     files = ImportFile.where(channel_name: channel)
-# byebug
+
     # Filter files by upload date if provided
     if params[:file_date].present?
       date = params[:file_date].to_date
@@ -140,7 +140,7 @@ class StorageController < ApplicationController
 
     files.each do |f|
       y = f.created_at.strftime("%Y")
-      m = f.created_at.strftime("%b")
+      m = f.created_at.strftime("%B")
       d = f.created_at.strftime("%d/%b/%Y")
       channel = f.channel_name.presence || "Unknown"
 

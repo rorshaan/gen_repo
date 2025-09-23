@@ -179,7 +179,7 @@ class ImportWorker
 
 	# Write rejected rows to CSV and return relative path under public/ (no leading slash)
 	def write_rejected_csv(import_file, channel_name, rejected_rows)
-		folder = Rails.root.join("public", "storage", "rejected", Time.current.strftime("%Y"), Time.current.strftime("%b"), channel_name.parameterize)
+		folder = Rails.root.join("public", "storage", "rejected", Time.current.strftime("%Y"), Time.current.strftime("%b"), Time.current.strftime("%d"), channel_name.parameterize)
 		FileUtils.mkdir_p(folder)
 
 		filename = "rejected_#{import_file.id}_#{Time.current.to_i}.csv"
