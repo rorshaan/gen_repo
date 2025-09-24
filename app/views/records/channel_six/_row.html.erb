@@ -1,0 +1,19 @@
+<tr>
+  <td><%= record.transfer_id %></td>
+  <td><%= record.reference_number %></td>
+  <td><%= record.transfer_date&.strftime("%d-%m-%Y %H:%M") %></td>
+  <td><%= record.previous_balance %></td>
+  <td><%= record.post_balance %></td>
+  <td><%= record.amount %></td>
+  <td>
+    <% if record.transfer_status || record.transfer_status == "Success" %>
+      <span class="badge bg-success"><%= record.transfer_status %></span>
+    <% else %>
+      <span class="badge bg-danger"><%= record.transfer_status %></span>
+    <% end %>
+  </td>
+  <td><%= record.money_payer_receiver %></td>
+  <td><%= record.account %></td>
+  <td><%= record.status_change_date&.strftime("%d-%m-%Y %H:%M") %></td>
+  <td><%= record.original_txn_id %></td>
+</tr>

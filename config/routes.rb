@@ -63,4 +63,7 @@ Rails.application.routes.draw do
   end
   resources :storage, only: [:index, :show]
   get "storage/model/:model_name", to: "storage#show_model", as: :storage_model
+
+  resources :records, only: [:index]
+
 end

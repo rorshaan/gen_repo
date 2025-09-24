@@ -1,0 +1,20 @@
+<tr>
+  <td><%= record.receipt_no %></td>
+  <td><%= record.completion_time&.strftime("%d-%m-%Y %H:%M") %></td>
+  <td><%= record.initiation_time&.strftime("%d-%m-%Y %H:%M") %></td>
+  <td><%= record.details %></td>
+  <td>
+    <% if record.transaction_status == "Completed" %>
+      <span class="badge bg-success">Transaction Success</span>
+    <% else %>
+      <span class="badge bg-danger"><%= record.transaction_status %></span>
+    <% end %>
+  </td>
+  <td><%= record.currency %></td>
+  <td><%= record.paid_in %></td>
+  <td><%= record.withdrawn %></td>
+  <td><%= record.balance %></td>
+  <td><%= record.reason_type %></td>
+  <td><%= record.opposite_party %></td>
+  <td><%= record.linked_transaction_id %></td>
+</tr>

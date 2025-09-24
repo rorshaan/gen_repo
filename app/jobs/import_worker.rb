@@ -152,24 +152,74 @@ class ImportWorker
       return false if unique_value.blank? || ChannelThree.exists?(transfer_id: unique_value)
 
       ChannelThree.create!(
-			  transfer_id: row["Transfer_ID"],
-			  reference_number: row["Refer_Number"],
-			  transfer_date: row["Trans_Date"],
-			  previous_balance: row["Prev Balance"],
-			  post_balance: row["Post Bal"],
-			  amount: row["Amount"],
-			  transfer_status: row["Transfer_Status"],
-			  money_payer_receiver: row["MoneyPayer/Receiver"],
-			  account: row["Account"],
-			  status_change_date: row["Status_Change_date"],
+			  transfer_id: row_hash["Transfer_ID"],
+			  reference_number: row_hash["Refer_Number"],
+			  transfer_date: row_hash["Trans_Date"],
+			  previous_balance: row_hash["Prev Balance"],
+			  post_balance: row_hash["Post Bal"],
+			  amount: row_hash["Amount"],
+			  transfer_status: row_hash["Transfer_Status"],
+			  money_payer_receiver: row_hash["MoneyPayer/Receiver"],
+			  account: row_hash["Account"],
+			  status_change_date: row_hash["Status_Change_date"],
+			  original_txn_id: row_hash["Original_Txn_ID"],
 			  import_file_id: import_file.id
 			)
 		when "Channel Four"
-			import_channel_four(spreadsheet,header)
+			unique_value = row_hash["Transaction ID"].to_s.strip
+			return false if unique_value.blank? || ChannelFour.exists?(transaction_id: unique_value)
+
+			ChannelFour.create!(
+			  transaction_id: row_hash["Transaction ID"],
+			  sender_msisdn: row_hash["Sender Msisdn"],
+			  transaction_amount: row_hash["Transaction Amount"],
+			  transaction_datetime: row_hash["Transaction Date and Time"],
+			  transaction_type: row_hash["Transaction Type"],
+			  receiver_msisdn: row_hash["Receiver Msisdn"],
+			  service_name: row_hash["Service Name"],
+			  transaction_status: row_hash["Transaction Status"],
+			  reference_number: row_hash["Reference Number"],
+			  previous_balance: row_hash["Previous Balance"],
+			  post_balance: row_hash["Post Balance"],
+			  external_transaction_id: row_hash["external_transaction_id"],
+			  import_file_id: import_file.id
+			)
 		when "Channel Five"
-			import_channel_five(spreadsheet,header)
+			unique_value = row_hash["Receipt No."].to_s.strip
+			return false if unique_value.blank? || ChannelFive.exists?(receipt_no: unique_value)
+
+			ChannelFive.create!(
+			  receipt_no: row_hash["Receipt No."],
+			  completion_time: row_hash["Completion Time"],
+			  initiation_time: row_hash["Initiation Time"],
+			  details: row_hash["Details"],
+			  transaction_status: row_hash["Transaction Status"],
+			  currency: row_hash["Currency"],
+			  paid_in: row_hash["Paid In"],
+			  withdrawn: row_hash["Withdrawn"],
+			  balance: row_hash["Balance"],
+			  reason_type: row_hash["Reason Type"],
+			  opposite_party: row_hash["Opposite Party"],
+			  linked_transaction_id: row_hash["Linked Transaction ID"],
+			  import_file_id: import_file.id
+			)
 		when "Channel Six"
-			import_channel_six(spreadsheet,header)
+			unique_value = row_hash["Transfer_ID"].to_s.strip
+      return false if unique_value.blank? || ChannelSix.exists?(transfer_id: unique_value)
+      
+      ChannelSix.create!(
+			  transfer_id: row_hash["Transfer_ID"],
+			  reference_number: row_hash["Refer_Number"],
+			  transfer_date: row_hash["Trans_Date"],
+			  previous_balance: row_hash["Prev Balance"],
+			  post_balance: row_hash["Post Bal"],
+			  amount: row_hash["Amount"],
+			  transfer_status: row_hash["Transfer_Status"],
+			  money_payer_receiver: row_hash["MoneyPayer/Receiver"],
+			  account: row_hash["Account"],
+			  status_change_date: row_hash["Status_Change_date"],
+			  import_file_id: import_file.id
+			)
 		else
 			Rails.logger.warn("Unknown model: #{model_name}")
 			false

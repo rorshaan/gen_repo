@@ -1,0 +1,3 @@
+class ChannelTransaction < ApplicationRecord
+
+end

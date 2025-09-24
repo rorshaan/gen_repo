@@ -1,0 +1,116 @@
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 col-md-4 mb-3">
+      <div class="list-group">
+        <% ["ChannelOne", "ChannelTwo", "ChannelThree", "ChannelFour", "ChannelFive", "ChannelSix"].each do |ch| %>
+          <%= link_to ch.titleize, records_path(channel: ch),
+                      class: "list-group-item list-group-item-action #{'active' if @channel_name == ch}" %>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-9 col-md-8">
+      <turbo-frame id="content_frame">
+
+        <!-- Filter Toggle Button -->
+        <div class="mb-2">
+          <% if params[:filter_open] == "true" %>
+            <%= link_to "Close Filters",
+                        records_path(channel: @channel_name, filter_open: "false"),
+                        class: "btn btn-outline-secondary btn-sm",
+                        data: { turbo_frame: "content_frame" } %>
+          <% else %>
+            <%= link_to "Open Filters",
+                        records_path(channel: @channel_name, filter_open: "true"),
+                        class: "btn btn-outline-secondary btn-sm",
+                        data: { turbo_frame: "content_frame" } %>
+          <% end %>
+        </div>
+
+        <!-- Filter Form -->
+        <% filter_fields = RecordsController::FILTER_FIELDS[@channel_name] %>
+
+        <div class="collapse 
+              <%= 'show' if params[:filter_open] == "true" || filter_fields&.any? { |f| params[f].present? } %>" id="filterForm">
+          <div class="card card-body mb-3">
+            <%= form_with url: records_path, method: :get, data: { turbo_frame: "content_frame" } do %>
+              <%= hidden_field_tag :channel, @channel_name %>
+              <%= hidden_field_tag :page, 1 %>
+              <%= hidden_field_tag :filter_open, "true" %>
+              <div class="row g-2 align-items-end">
+                <% filter_fields.each do |f| %>
+                  <% value = params[f] %>
+                  <% case f
+                     when :transaction_id, :receipt_no, :reference_number, :transfer_id %>
+                    <div class="col-lg-3">
+                      <%= label_tag f, f.to_s.humanize %>
+                      <%= text_field_tag f, value, class: "form-control" %>
+                    </div>
+                  <% when :status %>
+                    <div class="col-lg-3">
+                      <%= label_tag f, "Status" %>
+                      <%= select_tag f, options_for_select(["Success", "Failed"], value), include_blank: "All", class: "form-select" %>
+                    </div>
+                  <% when :transaction_amount, :amount %>
+                    <div class="col-lg-3">
+                      <%= label_tag f, "Sort Amount" %>
+                      <%= select_tag f, options_for_select(["Ascending", "Descending"], value), include_blank: "Select", class: "form-select" %>
+                    </div>
+                  <% when :start_date, :end_date %>
+                    <div class="col-lg-3">
+                      <%= label_tag f, f.to_s.humanize %>
+                      <%= date_field_tag f, value, class: "form-control" %>
+                    </div>
+                  <% when :file_id %>
+                    <% if @files.present? %>
+                      <div class="col-lg-3">
+                        <%= label_tag f, "File" %>
+                        <%= select_tag f, options_from_collection_for_select(@files, "id", "file_path", value), include_blank: "All Files", class: "form-select" %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                <% end %>
+                <div class="col-lg-3 d-flex gap-2">
+                  <%= submit_tag "Apply Filter", class: "btn btn-primary" %>
+                  <%= link_to "Clear Filters",
+                              records_path(channel: @channel_name, filter_open: "true"),
+                              class: "btn btn-outline-secondary" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Records Table -->
+        <div class="card">
+          <div class="card-header text-center">
+            <h4><%= @channel_name.titleize %> Records</h4>
+          </div>
+          <div class="card-body table-responsive">
+            <% if @records.any? %>
+            <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
+              <table class="table table-striped table-hover table-bordered table-sm">
+                <thead class="table-primary">
+                  <%= render "records/#{@channel_name.underscore}/header" %>
+                </thead>
+                <tbody>
+                  <%= render partial: "records/#{@channel_name.underscore}/row", collection: @records, as: :record %>
+                </tbody>
+              </table>
+            </div>
+            <% else %>
+              <div class="alert alert-info">No records found.</div>
+            <% end %>
+          </div>
+
+          <div class="card-footer d-flex justify-content-center">
+            <%= paginate @records, params: request.query_parameters %>
+          </div>
+        </div>
+
+      </turbo-frame>
+    </div>
+  </div>
+</div>

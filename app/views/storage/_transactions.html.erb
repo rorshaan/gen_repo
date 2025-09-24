@@ -91,42 +91,10 @@
           <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
             <table class="table table-sm table-bordered table-striped mb-0">
               <thead class="table-primary">
-                <tr>
-                  <th>Transaction ID</th>
-                  <th>Sender Msisdn</th>
-                  <th>Amount</th>
-                  <th>Date & Time</th>
-                  <th>Type</th>
-                  <th>Receiver</th>
-                  <th>Status</th>
-                  <th>Reference Number</th>
-                  <th>Previous Balance</th>
-                  <th>Post Balance</th>
-                  <th>External Transaction ID</th>
-                </tr>
+                <%= render "records/#{channel_name.gsub(" ", "").underscore}/header" %>
               </thead>
               <tbody>
-                <% records.each do |rec| %>
-                  <tr>
-                    <td><%= rec.transaction_id %></td>
-                    <td><%= rec.sender_msisdn %></td>
-                    <td><%= rec.transaction_amount %></td>
-                    <td><%= rec.transaction_datetime&.strftime("%d-%m-%Y %H:%M") %></td>
-                    <td><%= rec.transaction_type %></td>
-                    <td><%= rec.receiver_msisdn %></td>
-                    <td>
-                      <% if rec.transaction_status.to_s.downcase.include?("success") %>
-                        <span class="badge bg-success">Success</span>
-                      <% else %>
-                        <span class="badge bg-danger"><%= rec.transaction_status %></span>
-                      <% end %>
-                    </td>
-                    <td><%= rec.reference_number %></td>
-                    <td><%= rec.previous_balance %></td>
-                    <td><%= rec.post_balance %></td>
-                    <td><%= rec.external_transaction_id %></td>
-                  </tr>
-                <% end %>
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/row", collection: @records, as: :record %>
               </tbody>
             </table>
           </div>
@@ -136,44 +104,62 @@
           <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
             <table class="table table-sm table-bordered table-striped mb-0">
               <thead class="table-primary">
-                <tr>
-                  <th>Receipt No.</th>
-                  <th>Completion Time</th>
-                  <th>Initiation Time</th>
-                  <th>Details</th>
-                  <th>Status</th>
-                  <th>Currency</th>
-                  <th>Paid In</th>
-                  <th>Withdrawn</th>
-                  <th>Balance</th>
-                  <th>Reason Type</th>
-                  <th>Opposite Party</th>
-                  <th>Linked Transaction ID</th>
-                </tr>
+                <%= render "records/#{channel_name.gsub(" ", "").underscore}/header" %>
               </thead>
               <tbody>
-                <% records.each do |rec| %>
-                  <tr>
-                    <td><%= rec.receipt_no %></td>
-                    <td><%= rec.completion_time&.strftime("%d-%m-%Y %H:%M") %></td>
-                    <td><%= rec.initiation_time&.strftime("%d-%m-%Y %H:%M") %></td>
-                    <td><%= rec.details %></td>
-                    <td>
-                      <% if rec.transaction_status.to_s.downcase.include?("success") %>
-                        <span class="badge bg-success">Success</span>
-                      <% else %>
-                        <span class="badge bg-danger"><%= rec.transaction_status %></span>
-                      <% end %>
-                    </td>
-                    <td><%= rec.currency %></td>
-                    <td><%= rec.paid_in %></td>
-                    <td><%= rec.withdrawn %></td>
-                    <td><%= rec.balance %></td>
-                    <td><%= rec.reason_type %></td>
-                    <td><%= rec.opposite_party %></td>
-                    <td><%= rec.linked_transaction_id %></td>
-                  </tr>
-                <% end %>
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/row", collection: @records, as: :record %>
+              </tbody>
+            </table>
+          </div>
+
+        <% elsif channel_name == "Channel Three" %>
+          <!-- Channel Three table -->
+          <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
+            <table class="table table-sm table-bordered table-striped mb-0">
+              <thead class="table-primary">
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/header"%>
+              </thead>
+              <tbody>
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/row", collection: @records, as: :record %>
+              </tbody>
+            </table>
+          </div>
+
+        <% elsif channel_name == "Channel Four" %>
+          <!-- Channel Three table -->
+          <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
+            <table class="table table-sm table-bordered table-striped mb-0">
+              <thead class="table-primary">
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/header"%>
+              </thead>
+              <tbody>
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/row", collection: @records, as: :record %>
+              </tbody>
+            </table>
+          </div>
+
+        <% elsif channel_name == "Channel Five" %>
+          <!-- Channel Three table -->
+          <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
+            <table class="table table-sm table-bordered table-striped mb-0">
+              <thead class="table-primary">
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/header"%>
+              </thead>
+              <tbody>
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/row", collection: @records, as: :record %>
+              </tbody>
+            </table>
+          </div>
+
+        <% elsif channel_name == "Channel Six" %>
+          <!-- Channel Three table -->
+          <div class="overflow-auto" style="max-width: 100%; white-space: nowrap;">
+            <table class="table table-sm table-bordered table-striped mb-0">
+              <thead class="table-primary">
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/header"%>
+              </thead>
+              <tbody>
+                <%= render partial: "records/#{channel_name.gsub(" ", "").underscore}/row", collection: @records, as: :record %>
               </tbody>
             </table>
           </div>

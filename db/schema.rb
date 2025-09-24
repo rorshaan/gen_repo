@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_09_18_094229) do
+ActiveRecord::Schema[7.0].define(version: 2025_09_23_133921) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -31,6 +31,49 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_18_094229) do
     t.datetime "updated_at", null: false
     t.integer "import_file_id"
     t.index ["import_file_id"], name: "index_channel_ones_on_import_file_id"
+  end
+
+  create_table "channel_transactions", force: :cascade do |t|
+    t.string "type", null: false
+    t.string "transaction_status"
+    t.decimal "previous_balance"
+    t.decimal "post_balance"
+    t.string "reference_number"
+    t.string "transaction_id"
+    t.string "sender_msisdn"
+    t.decimal "transaction_amount"
+    t.datetime "transaction_datetime"
+    t.string "transaction_type"
+    t.string "receiver_msisdn"
+    t.string "service_name"
+    t.string "external_transaction_id"
+    t.string "receipt_no"
+    t.datetime "completion_time"
+    t.datetime "initiation_time"
+    t.string "details"
+    t.string "currency"
+    t.string "paid_in"
+    t.decimal "withdrawn"
+    t.decimal "balance"
+    t.string "reason_type"
+    t.string "opposite_party"
+    t.string "linked_transaction_id"
+    t.string "transfer_id"
+    t.datetime "transfer_date"
+    t.decimal "amount"
+    t.string "transfer_status"
+    t.decimal "money_payer_receiver"
+    t.string "account"
+    t.datetime "status_change_date"
+    t.decimal "original_txn_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "import_file_id", null: false
+    t.index ["import_file_id"], name: "index_channel_transactions_on_import_file_id"
+    t.index ["receipt_no"], name: "index_channel_transactions_on_receipt_no"
+    t.index ["transaction_id"], name: "index_channel_transactions_on_transaction_id"
+    t.index ["transfer_id"], name: "index_channel_transactions_on_transfer_id"
+    t.index ["type"], name: "index_channel_transactions_on_type"
   end
 
   create_table "channel_twos", force: :cascade do |t|
@@ -81,5 +124,6 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_18_094229) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "channel_transactions", "import_files"
   add_foreign_key "import_files", "users"
 end

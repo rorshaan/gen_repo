@@ -121,6 +121,90 @@ class StorageController < ApplicationController
           rel = rel.order(transaction_amount: sort_order)
         end
         rel.page(params[:page]).per(20)
+      when "Channel Three"
+        rel = ChannelThree.where(import_file_id: files.ids)
+        rel = rel.where("transfer_id LIKE ?", "%#{params[:transfer_id].strip}%") if params[:transfer_id].present?
+        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
+        if params[:status].present?
+          case params[:status]
+          when "Success"
+            rel = rel.where("transaction_status ILIKE ?", "%Success%")
+          when "Failed"
+            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
+          end
+        end
+        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
+        if params[:start_date].present? && params[:end_date].present?
+          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+        end
+        if params[:transaction_amount].present?
+          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
+          rel = rel.order(transaction_amount: sort_order)
+        end
+        rel.page(params[:page]).per(20)
+      when "Channel Four"
+        rel = ChannelFour.where(import_file_id: files.ids)
+        rel = rel.where("transaction_id LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
+        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
+        if params[:status].present?
+          case params[:status]
+          when "Success"
+            rel = rel.where("transaction_status ILIKE ?", "%Success%")
+          when "Failed"
+            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
+          end
+        end
+        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
+        if params[:start_date].present? && params[:end_date].present?
+          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+        end
+        if params[:transaction_amount].present?
+          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
+          rel = rel.order(transaction_amount: sort_order)
+        end
+        rel.page(params[:page]).per(20)
+      when "Channel Five"
+        rel = ChannelFive.where(import_file_id: files.ids)
+        rel = rel.where("receipt_no LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
+        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
+        if params[:status].present?
+          case params[:status]
+          when "Success"
+            rel = rel.where("transaction_status ILIKE ?", "%Success%")
+          when "Failed"
+            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
+          end
+        end
+        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
+        if params[:start_date].present? && params[:end_date].present?
+          rel = rel.where(initiated_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+        end
+        if params[:transaction_amount].present?
+          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
+          rel = rel.order(transaction_amount: sort_order)
+        end
+        rel.page(params[:page]).per(20)
+      when "Channel Six"
+        rel = ChannelSix.where(import_file_id: files.ids)
+        rel = rel.where("transfer_id LIKE ?", "%#{params[:transfer_id].strip}%") if params[:transfer_id].present?
+        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
+        if params[:status].present?
+          case params[:status]
+          when "Success"
+            rel = rel.where("transaction_status ILIKE ?", "%Success%")
+          when "Failed"
+            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
+          end
+        end
+        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
+        if params[:start_date].present? && params[:end_date].present?
+          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+        end
+        if params[:transaction_amount].present?
+          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
+          rel = rel.order(transaction_amount: sort_order)
+        end
+        rel.page(params[:page]).per(20)
       else
         ChannelOne.none.page(params[:page]).per(20)
       end

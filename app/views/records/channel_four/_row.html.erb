@@ -1,0 +1,20 @@
+<tr>
+  <td><%= record.transaction_id %></td>
+  <td><%= record.sender_msisdn %></td>
+  <td><%= record.transaction_amount %></td>
+  <td><%= record.transaction_datetime&.strftime("%d-%m-%Y %H:%M") %></td>
+  <td><%= record.transaction_type %></td>
+  <td><%= record.receiver_msisdn %></td>
+  <td><%= record.service_name %></td>
+  <td>
+    <% if record.transaction_status == "Transaction Success" %>
+      <span class="badge bg-success">Transaction Success</span>
+    <% else %>
+      <span class="badge bg-danger"><%= record.transaction_status %></span>
+    <% end %>
+  </td>
+  <td><%= record.reference_number %></td>
+  <td><%= record.previous_balance %></td>
+  <td><%= record.post_balance %></td>
+  <td><%= record.external_transaction_id %></td>
+</tr>
