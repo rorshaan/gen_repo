@@ -41,7 +41,7 @@ class RecordsController < ApplicationController
 
   def load_files
     channel_name = @channel_name.gsub(/([A-Z])/, ' \1').strip
-    @files = ImportFile.where(channel_name: channel_name)
+    @files = ImportFile.where(channel_name: channel_name).order(created_at: :desc)
   end
 
   def apply_filters(records)

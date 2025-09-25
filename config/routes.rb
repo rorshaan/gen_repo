@@ -65,5 +65,9 @@ Rails.application.routes.draw do
   get "storage/model/:model_name", to: "storage#show_model", as: :storage_model
 
   resources :records, only: [:index]
-
+  namespace :api do
+    namespace :v1 do
+      resources :records, only: [:index]
+    end
+  end
 end
