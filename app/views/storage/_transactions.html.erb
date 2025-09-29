@@ -13,74 +13,71 @@
         <strong><%= channel %></strong> — All Records
       <% end %>
     </div>
-    
+
     <div class="card-header">
-      <!-- Toggle Filters Button -->
-      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
-        Toggle Filters
-      </button>
+      <div class="mb-2">
+          <% if params[:filter_open] == "true" %>
+            <%= link_to "Close Filters",
+                        storage_model_path(channel: @channel_name, filter_open: "false"),
+                        class: "btn btn-outline-secondary btn-sm",
+                        data: { turbo_frame: "content_frame" } %>
+          <% else %>
+            <%= link_to "Open Filters",
+                        storage_model_path(channel: @channel_name, filter_open: "true"),
+                        class: "btn btn-outline-secondary btn-sm",
+                        data: { turbo_frame: "content_frame" } %>
+          <% end %>
+        </div>
     </div>
 
     <div class="card-body p-2">
       <% channel_name = file.present? ? file.channel_name : channel %>
 
-      <div class="collapse-open" id="filterCollapse">
+      <% filter_fields = StorageController::FILTER_FIELDS[channel_name] %>
+      <div class="collapse<%= 'show' if params[:filter_open] == "true" || filter_fields&.any? { |f| params[f].present? } %>"" id="filterCollapse">
         <div class="mb-3">
-          <%= form_with url: storage_model_path(model_name: channel_name),
-                        method: :get,
-                        data: { turbo_frame: "content_frame" },
-                        id: "search_form" do %>
-            <%= hidden_field_tag :channel, file.present? ? file.channel_name : channel %>
+          <%= form_with url: storage_model_path(model_name: channel_name), method: :get, data: { turbo_frame: "content_frame" } do %>
+            <%= hidden_field_tag :channel, channel_name %>
             <%= hidden_field_tag :page, 1 %>
             <%= hidden_field_tag :file_date, params[:file_date] %>
+            <%= hidden_field_tag :filter_open, "true" %>
 
             <div class="row g-2 align-items-end">
-              <!-- Transaction ID -->
-              <div class="col-lg-3">
-                <%= label_tag :transaction_id, "Transaction ID", class: "form-label" %>
-                <%= text_field_tag :transaction_id, params[:transaction_id], class: "form-control", placeholder: "Search Transaction Id" %>
-              </div>
-
-              <!-- Reference Number -->
-              <div class="col-lg-3">
-                <%= label_tag :reference_number, "Reference ID", class: "form-label" %>
-                <%= text_field_tag :reference_number, params[:reference_number], class: "form-control", placeholder: "Search Reference Id" %>
-              </div>
-
-              <!-- Date Range -->
-              <div class="col-lg-3">
-                <%= label_tag :start_date, "Start Date", class: "form-label" %>
-                <%= date_field_tag :start_date, params[:start_date], class: "form-control" %>
-              </div>
-              <div class="col-lg-3">
-                <%= label_tag :end_date, "End Date", class: "form-label" %>
-                <%= date_field_tag :end_date, params[:end_date], class: "form-control" %>
-              </div>
-
-              <!-- Status -->
-              <div class="col-lg-3">
-                <%= label_tag :status, "Status", class: "form-label" %>
-                <%= select_tag :status, options_for_select(["Success", "Failed"], params[:status]), include_blank: "Select", class: "form-select" %>
-              </div>
-
-              <div class="col-lg-3">
-                <%= label_tag :transaction_amount, "Amount", class: "form-label" %>
-                <%= select_tag :transaction_amount, options_for_select(["Ascending", "Descending"], params[:transaction_amount]), include_blank: "Select", class: "form-select" %>
-              </div>
-
-              <!-- File Dropdown -->
-              <% if files.present? %>
-                <div class="col-lg-3">
-                  <%= label_tag :file_id, "File", class: "form-label" %>
-                  <%= select_tag :file_id, options_from_collection_for_select(files, "id", "file_path", params[:file_id]), include_blank: "All Files", class: "form-select" %>
-                </div>
+              <% filter_fields.each do |f| %>
+                <% value = params[f] %>
+                <% case f
+                   when :transaction_id, :receipt_no, :reference_number, :transfer_id %>
+                  <div class="col-lg-3">
+                    <%= label_tag f, f.to_s.humanize + ' ID' %>
+                    <%= text_field_tag f, value, class: "form-control", placeholder: "Search #{f.to_s.humanize + ' ID'}" %>
+                  </div>
+                <% when :status %>
+                  <div class="col-lg-3">
+                    <%= label_tag f, "Status" %>
+                    <%= select_tag f, options_for_select(["Success", "Failed"], value), include_blank: "All", class: "form-select" %>
+                  </div>
+                <% when :transaction_amount, :amount %>
+                  <div class="col-lg-3">
+                    <%= label_tag f, "Sort Amount" %>
+                    <%= select_tag f, options_for_select(["Ascending", "Descending"], value), include_blank: "Select", class: "form-select" %>
+                  </div>
+                <% when :start_date, :end_date %>
+                  <div class="col-lg-3">
+                    <%= label_tag f, f.to_s.humanize %>
+                    <%= date_field_tag f, value, class: "form-control" %>
+                  </div>
+                <% when :file_id %>
+                  <% if files.present? %>
+                    <div class="col-lg-3">
+                      <%= label_tag f, "File" %>
+                      <%= select_tag f, options_from_collection_for_select(files, "id", "file_path", value), include_blank: "All Files", class: "form-select" %>
+                    </div>
+                  <% end %>
+                <% end %>
               <% end %>
-
               <div class="col-lg-3 d-flex gap-2">
                 <%= submit_tag "Apply Filter", class: "btn btn-primary" %>
-                <%= link_to "Clear Filters",
-                              storage_model_path(channel: @channel_name),
-                              class: "btn btn-outline-secondary" %>
+                <%= link_to "Clear Filters", storage_model_path(model_name: channel_name, filter_open: "true"), class: "btn btn-outline-secondary" %>
               </div>
             </div>
           <% end %>

@@ -1,223 +1,45 @@
 class StorageController < ApplicationController
+
+  FILTER_FIELDS = {
+    "Channel One"   => %i[transaction_id reference_number status transaction_amount start_date end_date file_id],
+    "Channel Two"   => %i[receipt_no reference_number status transaction_amount start_date end_date file_id],
+    "Channel Three" => %i[transfer_id reference_number status transaction_amount start_date end_date file_id],
+    "Channel Four"  => %i[transaction_id reference_number status transaction_amount start_date end_date file_id],
+    "Channel Five"  => %i[receipt_no reference_number status transaction_amount start_date end_date file_id],
+    "Channel Six"   => %i[transfer_id reference_number status transaction_amount start_date end_date file_id]
+  }.freeze
+
+  AMOUNT_COLUMN = {
+    "Channel One"   => :transaction_amount,
+    "Channel Three" => :amount,
+    "Channel Six"   => :amount
+  }.freeze
+
   def index
     files = ImportFile.where.not(processed_count: 0).order(created_at: :desc).includes(:user)
     @tree = build_tree(files)
   end
 
-  def show
-    @selected_file = ImportFile.find(params[:id])
-    channel = params[:channel].to_s
-    files = [@selected_file]
-
-    @records =
-      case channel
-      when "Channel One"
-        rel = ChannelOne.where(import_file_id: files.map(&:id))
-        rel = rel.where("transaction_id LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        # rel = rel.where(transaction_status: params[:status]) if params[:status].present? && params[:status] != "All"
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-
-        # rel = rel.order(transaction_amount: (params[:sort] == "desc" ? :desc : :asc)) if params[:sort].present?
-        rel.page(params[:page]).per(20)
-      when "Channel Two"
-        rel = ChannelTwo.where(import_file_id: files.map(&:id))
-        rel = rel.where("receipt_no LIKE ?", "%#{params[:transaction_id]}%") if params[:transaction_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number]}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(initiated_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      else
-        ChannelOne.none.page(params[:page]).per(20)
-      end
-
-    # render partial only (will be inserted into the turbo-frame)
-    render partial: "storage/transactions", locals: { file: @selected_file, channel: channel, records: @records, files: files }
-  end
-
   def show_model
     channel = params[:model_name].to_s
-
-    # collect all files for this channel
     files = ImportFile.where(channel_name: channel)
+    files = files.where(created_at: params[:file_date].to_date.all_day) if params[:file_date].present?
 
-    # Filter files by upload date if provided
-    if params[:file_date].present?
-      date = params[:file_date].to_date
-      files = files.where(created_at: date.beginning_of_day..date.end_of_day)
-    end
+    # Get all records for the channel and filter
+    @records = channel_class(channel).where(import_file_id: files.ids)
+    @records = filter_records(@records, channel)
+    @records = @records.includes(:import_file).page(params[:page]).per(20)
 
-    # merge all records across files
-    @records =
-      case channel
-      when "Channel One"
-        rel = ChannelOne.where(import_file_id: files.ids)
-        rel = rel.where("transaction_id LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      when "Channel Two"
-        rel = ChannelTwo.where(import_file_id: files.ids)
-        rel = rel.where("receipt_no LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(initiated_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      when "Channel Three"
-        rel = ChannelThree.where(import_file_id: files.ids)
-        rel = rel.where("transfer_id LIKE ?", "%#{params[:transfer_id].strip}%") if params[:transfer_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      when "Channel Four"
-        rel = ChannelFour.where(import_file_id: files.ids)
-        rel = rel.where("transaction_id LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      when "Channel Five"
-        rel = ChannelFive.where(import_file_id: files.ids)
-        rel = rel.where("receipt_no LIKE ?", "%#{params[:transaction_id].strip}%") if params[:transaction_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(initiated_at: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      when "Channel Six"
-        rel = ChannelSix.where(import_file_id: files.ids)
-        rel = rel.where("transfer_id LIKE ?", "%#{params[:transfer_id].strip}%") if params[:transfer_id].present?
-        rel = rel.where("reference_number LIKE ?", "%#{params[:reference_number].strip}%") if params[:reference_number].present?
-        if params[:status].present?
-          case params[:status]
-          when "Success"
-            rel = rel.where("transaction_status ILIKE ?", "%Success%")
-          when "Failed"
-            rel = rel.where("transaction_status ILIKE ?", "%Failed%")
-          end
-        end
-        rel = rel.where(import_file_id: params[:file_id]) if params[:file_id].present?
-        if params[:start_date].present? && params[:end_date].present?
-          rel = rel.where(transaction_datetime: params[:start_date].to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
-        end
-        if params[:transaction_amount].present?
-          sort_order = params[:transaction_amount] == "Descending" ? :desc : :asc
-          rel = rel.order(transaction_amount: sort_order)
-        end
-        rel.page(params[:page]).per(20)
-      else
-        ChannelOne.none.page(params[:page]).per(20)
-      end
-
-    # Determine selected file from dropdown
     @selected_file = ImportFile.find_by(id: params[:file_id]) if params[:file_id].present?
 
-    # render same transactions partial, but without a single file
     render partial: "storage/transactions", locals: { file: @selected_file, channel: channel, records: @records, files: files }
   end
 
-
   private
+
+  def channel_class(channel)
+    channel.delete(' ').constantize
+  end
 
   def build_tree(files)
     tree = {}
@@ -247,5 +69,34 @@ class StorageController < ApplicationController
 
     # optional: sort years descending
     tree.sort_by { |year, _| -year.to_i }.to_h
+  end
+
+  def filter_records(records, channel)
+    fields = FILTER_FIELDS[channel] || []
+
+    fields.each do |field|
+      value = params[field]
+      next if value.blank?
+
+      case field
+      when :transaction_id, :receipt_no, :reference_number, :transfer_id
+        records = records.where("#{field} LIKE ?", "%#{value.strip}%")
+      when :status
+        records = records.where("transaction_status ILIKE ?", "%#{value}%") if value != "All"
+      when :transaction_amount, :amount
+        sort_order = value == "Descending" ? :desc : :asc
+        column = AMOUNT_COLUMN[channel] || :transaction_amount
+        records = records.order(column => sort_order)
+      when :start_date
+        if params[:end_date].present?
+          date_field = channel == "Channel Two" || channel == "Channel Five" ? :initiated_at : :transaction_datetime
+          records = records.where(date_field => value.to_date.beginning_of_day..params[:end_date].to_date.end_of_day)
+        end
+      when :file_id
+        records = records.where(import_file_id: value)
+      end
+    end
+
+    records
   end
 end
