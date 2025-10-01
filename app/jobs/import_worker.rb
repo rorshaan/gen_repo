@@ -2,7 +2,7 @@ class ImportWorker
 	include Sidekiq::Worker
 
 
-	def perform(file_path, model_name, json_data = nil, import_file_id)
+	def perform(file_path, model_name, import_file_id, json_data = nil, transaction_category = nil)
 		import_file = ImportFile.find(import_file_id)
 		import_file.processing!
 
@@ -12,9 +12,9 @@ class ImportWorker
 
 		if json_data.present?
 			data_array = JSON.parse(json_data) rescue []
-			inserted, rejected_rows = import_from_json(data_array, model_name, import_file)
+			inserted, rejected_rows = import_from_json(data_array, model_name, import_file, transaction_category)
 		elsif file_path.present?
-			inserted, rejected_rows = import_from_spreadsheet(file_path, model_name, import_file)
+			inserted, rejected_rows = import_from_spreadsheet(file_path, model_name, import_file, transaction_category)
 		else
 			Rails.logger.warn("[ImportWorker] no file or json data provided for #{model_name}")
 		end
@@ -40,9 +40,9 @@ class ImportWorker
 	private
 
 
-	def import_from_spreadsheet(file_path, model_name, import_file)
+	def import_from_spreadsheet(file_path, model_name, import_file, transaction_category)
 		spreadsheet = Roo::Spreadsheet.open(file_path)
-		header = spreadsheet.row(1).map(&:to_s).map(&:strip)
+		header = spreadsheet.row(6).map(&:to_s).map(&:strip)
 
 		validator = FileValidator.new(model_name, header)
 		unless validator.valid?
@@ -50,15 +50,15 @@ class ImportWorker
       return [0, [{ row_number: nil, raw: {}, error: validator.error_message }]]
     end
 
-    import_file.update!(total_rows: [spreadsheet.last_row - 1, 0].max) if import_file && import_file.total_rows.blank?
+    import_file.update!(total_rows: [spreadsheet.last_row - 6, 0].max) if import_file && import_file.total_rows.blank?
 
     inserted = 0
     rejected = []
 
-    (2..spreadsheet.last_row).each do |i|
+    (7..spreadsheet.last_row).each do |i|
 			row_hash = Hash[[header, spreadsheet.row(i)].transpose]
 			begin
-				ok = create_record_for(model_name, row_hash, import_file)
+				ok = create_record_for(model_name, row_hash, import_file, transaction_category)
 				if ok
 					inserted += 1
 				else
@@ -107,7 +107,7 @@ class ImportWorker
     [inserted, rejected]
 	end
 
-	def create_record_for(model_name, row_hash, import_file)
+	def create_record_for(model_name, row_hash, import_file, transaction_category)
 		case model_name
 		when "Channel One"
 			unique_value = row_hash["Transaction ID"].to_s.strip
@@ -126,7 +126,8 @@ class ImportWorker
 			  previous_balance: row_hash["Previous Balance"],
 			  post_balance: row_hash["Post Balance"],
 			  external_transaction_id: row_hash["external_transaction_id"],
-			  import_file_id: import_file.id
+			  import_file_id: import_file.id,
+			  transaction_category: transaction_category
 			)
 		when "Channel Two"
 			unique_value = row_hash["Receipt No."].to_s.strip
@@ -145,7 +146,8 @@ class ImportWorker
 			  reason_type: row_hash["Reason Type"],
 			  opposite_party: row_hash["Opposite Party"],
 			  linked_transaction_id: row_hash["Linked Transaction ID"],
-			  import_file_id: import_file.id
+			  import_file_id: import_file.id,
+			  transaction_category: transaction_category
 			)
 		when "Channel Three"
 			unique_value = row_hash["Transfer_ID"].to_s.strip
@@ -163,7 +165,8 @@ class ImportWorker
 			  account: row_hash["Account"],
 			  status_change_date: row_hash["Status_Change_date"],
 			  original_txn_id: row_hash["Original_Txn_ID"],
-			  import_file_id: import_file.id
+			  import_file_id: import_file.id,
+			  transaction_category: transaction_category
 			)
 		when "Channel Four"
 			unique_value = row_hash["Transaction ID"].to_s.strip
@@ -182,7 +185,8 @@ class ImportWorker
 			  previous_balance: row_hash["Previous Balance"],
 			  post_balance: row_hash["Post Balance"],
 			  external_transaction_id: row_hash["external_transaction_id"],
-			  import_file_id: import_file.id
+			  import_file_id: import_file.id,
+			  transaction_category: transaction_category
 			)
 		when "Channel Five"
 			unique_value = row_hash["Receipt No."].to_s.strip
@@ -201,7 +205,8 @@ class ImportWorker
 			  reason_type: row_hash["Reason Type"],
 			  opposite_party: row_hash["Opposite Party"],
 			  linked_transaction_id: row_hash["Linked Transaction ID"],
-			  import_file_id: import_file.id
+			  import_file_id: import_file.id,
+			  transaction_category: transaction_category
 			)
 		when "Channel Six"
 			unique_value = row_hash["Transfer_ID"].to_s.strip
@@ -218,7 +223,8 @@ class ImportWorker
 			  money_payer_receiver: row_hash["MoneyPayer/Receiver"],
 			  account: row_hash["Account"],
 			  status_change_date: row_hash["Status_Change_date"],
-			  import_file_id: import_file.id
+			  import_file_id: import_file.id,
+			  transaction_category: transaction_category
 			)
 		else
 			Rails.logger.warn("Unknown model: #{model_name}")

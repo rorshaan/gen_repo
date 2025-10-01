@@ -3,11 +3,12 @@ module Imports
 		class ValidationError < StandardError; end
 
 
-		def initialize(model_name:, user:, file: nil, data_array: nil)
+		def initialize(model_name:, user:, file: nil, data_array: nil, transaction_category: nil)
 			@model_name = model_name
 			@user = user
 			@file = file
 			@data_array = data_array
+			@transaction_category = transaction_category
 		end
 
 		def call
@@ -46,11 +47,11 @@ module Imports
 
 			spreadsheet = Roo::Spreadsheet.open(file_path.to_s, extension: ext.presence || :xlsx)
 			
-			header = spreadsheet.row(1).map(&:to_s).map(&:strip)
+			header = spreadsheet.row(6).map(&:to_s).map(&:strip)
 
 			validate_header!(header)
 
-			total_rows = [spreadsheet.last_row - 1, 0].max
+			total_rows = [spreadsheet.last_row - 6, 0].max
 
 			relative_path = file_path.to_s.sub(Rails.root.join("public").to_s + "/", "")
 
@@ -64,7 +65,7 @@ module Imports
 				rejected_count: 0
 			)
 
-			job_id = ImportWorker.perform_async(file_path.to_s, model_name, nil, import_file.id)
+			job_id = ImportWorker.perform_async(file_path.to_s, model_name, import_file.id, nil,  @transaction_category)
 			import_file.update!(job_id: job_id)
 
 			import_file
@@ -90,7 +91,7 @@ module Imports
         rejected_count: 0
       )
 
-      job_id = ImportWorker.perform_async(nil, model_name, data_array.to_json)
+      job_id = ImportWorker.perform_async(nil, model_name, import_file.id, data_array.to_json, @transaction_category)
       import_file.update!(job_id: job_id)
 
       import_file

@@ -35,6 +35,39 @@ class StorageController < ApplicationController
     render partial: "storage/transactions", locals: { file: @selected_file, channel: channel, records: @records, files: files }
   end
 
+  def channel_one_hierarchy
+    @channel = "Channel One"
+    records = ChannelOne.all
+
+    # Group by transaction_category -> last 4 digits of sender_msisdn -> month -> day
+    @tree = records.group_by(&:transaction_category).transform_values do |category_records|
+      category_records.group_by { |r| r.sender_msisdn[-4..] }.transform_values do |channel_records|
+        channel_records.group_by { |r| r.transaction_datetime.strftime("%B") }.transform_values do |month_records|
+          month_records.group_by { |r| r.transaction_datetime.strftime("%d/%b/%Y") }
+        end
+      end
+    end
+
+    render "storage/channel_one_hierarchy"
+  end
+
+  # Load daily records for a given month (Turbo Frame)
+  def channel_one_month
+    category = params[:category]
+    account  = params[:account]
+    month    = params[:month]
+
+    month_date = Date.strptime(month, "%B %Y") rescue nil
+    return render plain: "Invalid month", status: 400 unless month_date
+
+    records = ChannelOne.where(transaction_category: category, sender_msisdn: account)
+                        .where(transaction_datetime: month_date.beginning_of_month..month_date.end_of_month)
+
+    @days = records.group_by { |r| r.transaction_datetime.strftime("%d/%b/%Y") }
+
+    render partial: "storage/channel_one_month_records", locals: { days: @days }
+  end
+
   private
 
   def channel_class(channel)

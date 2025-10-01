@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_09_23_133921) do
+ActiveRecord::Schema[7.0].define(version: 2025_09_29_080313) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -69,6 +69,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_09_23_133921) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "import_file_id", null: false
+    t.string "transaction_category"
     t.index ["import_file_id"], name: "index_channel_transactions_on_import_file_id"
     t.index ["receipt_no"], name: "index_channel_transactions_on_receipt_no"
     t.index ["transaction_id"], name: "index_channel_transactions_on_transaction_id"

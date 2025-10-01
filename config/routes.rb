@@ -47,21 +47,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :channel_ones, only: [:index]
-
-  namespace :api do
-    namespace :v1 do
-      resources :channel_ones, only: [:index]
+  resources :storage do
+    collection do
+      get :channel_one_hierarchy
+      get :channel_one_month
     end
   end
-
-  resources :channel_twos, only: [:index]
-  namespace :api do
-    namespace :v1 do
-      resources :channel_twos, only: [:index]
-    end
-  end
-  resources :storage, only: [:index, :show]
   get "storage/model/:model_name", to: "storage#show_model", as: :storage_model
 
   resources :records, only: [:index]

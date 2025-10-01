@@ -12,6 +12,11 @@
       <%= form.select :model, options_for_select(["Channel One", "Channel Two", "Channel Three", "Channel Four", "Channel Five", "Channel Six"]), {}, class: "form-select" %>
     </div>
 
+    <div class="mb-3">
+      <%= form.label :transaction_category, "Transaction Category" %>
+      <%= form.select :transaction_category, options_for_select(["Deposits", "Withdrawals"]), {}, class: "form-select" %>
+    </div>
+
     <%= form.submit "Upload", class: "btn btn-primary" %>
   <% end %>
 </div>
